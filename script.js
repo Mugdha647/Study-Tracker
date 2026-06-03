@@ -1,95 +1,95 @@
- const baseTasks = [
-      {
-        id:1,
-        name:"Full Stack Practice",
-        dailyHours:3
-      },
-      {
-        id:2,
-        name:"Problem Solving",
-        dailyHours:2
-      },
-      {
-        id:3,
-        name:"IELTS Practice",
-        dailyHours:1
-      }
-    ];
+const baseTasks = [
+  {
+    id: 1,
+    name: "Full Stack Development",
+    dailyHours: 3
+  },
+  {
+    id: 2,
+    name: "Problem Solving",
+    dailyHours: 2
+  },
+  {
+    id: 3,
+    name: "IELTS Practice",
+    dailyHours: 1
+  }
+];
 
-    const today = new Date().toDateString();
+const today = new Date().toDateString();
 
-    document.getElementById("date").innerText = today;
+document.getElementById("date").innerText = today;
 
-    // Initialize App
-    function initializeData(){
+// Initialize App
+function initializeData() {
 
-      let savedDate = localStorage.getItem("savedDate");
+  let savedDate = localStorage.getItem("savedDate");
 
-      let tasks = JSON.parse(localStorage.getItem("tasks"));
+  let tasks = JSON.parse(localStorage.getItem("tasks"));
 
-      // First Time Setup
-      if(!tasks){
+  // First Time Setup
+  if (!tasks) {
 
-        tasks = baseTasks.map(task => ({
-          ...task,
-          remainingHours: task.dailyHours,
-          completed:false
-        }));
+    tasks = baseTasks.map(task => ({
+      ...task,
+      remainingHours: task.dailyHours,
+      completed: false
+    }));
 
-        localStorage.setItem("tasks", JSON.stringify(tasks));
-        localStorage.setItem("savedDate", today);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    localStorage.setItem("savedDate", today);
 
-        renderTasks();
-        return;
-      }
+    renderTasks();
+    return;
+  }
 
-      // New Day Check
-      if(savedDate !== today){
+  // New Day Check
+  if (savedDate !== today) {
 
-        tasks.forEach(task => {
+    tasks.forEach(task => {
 
-          // If unfinished, add new daily hours
-          if(task.remainingHours > 0){
+      // If unfinished, add new daily hours
+      if (task.remainingHours > 0) {
 
-            task.remainingHours =
-              task.remainingHours + task.dailyHours;
+        task.remainingHours =
+          task.remainingHours + task.dailyHours;
 
-          } else {
+      } else {
 
-            // If completed yesterday
-            task.remainingHours = task.dailyHours;
-          }
-
-          task.completed = false;
-        });
-
-        localStorage.setItem("tasks", JSON.stringify(tasks));
-        localStorage.setItem("savedDate", today);
+        // If completed yesterday
+        task.remainingHours = task.dailyHours;
       }
 
-      renderTasks();
+      task.completed = false;
+    });
+
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    localStorage.setItem("savedDate", today);
+  }
+
+  renderTasks();
+}
+
+// Render Tasks
+function renderTasks() {
+
+  const taskList = document.getElementById("taskList");
+
+  taskList.innerHTML = "";
+
+  let tasks = JSON.parse(localStorage.getItem("tasks"));
+
+  tasks.forEach(task => {
+
+    const div = document.createElement("div");
+
+    div.classList.add("task");
+
+    if (task.completed) {
+      div.classList.add("completed");
     }
 
-    // Render Tasks
-    function renderTasks(){
-
-      const taskList = document.getElementById("taskList");
-
-      taskList.innerHTML = "";
-
-      let tasks = JSON.parse(localStorage.getItem("tasks"));
-
-      tasks.forEach(task => {
-
-        const div = document.createElement("div");
-
-        div.classList.add("task");
-
-        if(task.completed){
-          div.classList.add("completed");
-        }
-
-        div.innerHTML = `
+    div.innerHTML = `
         
           <div class="task-title">
             ${task.name}
@@ -114,73 +114,85 @@
           </div>
         `;
 
-        taskList.appendChild(div);
-      });
+    taskList.appendChild(div);
+  });
+}
+
+// Reduce 1 Hour
+function studyHour(id) {
+
+  let tasks = JSON.parse(localStorage.getItem("tasks"));
+
+  tasks = tasks.map(task => {
+
+    if (task.id === id) {
+
+      if (task.remainingHours > 0) {
+        task.remainingHours--;
+      }
+
+      // Auto Complete
+      if (task.remainingHours === 0) {
+        task.completed = true;
+      }
     }
 
-    // Reduce 1 Hour
-    function studyHour(id){
+    return task;
+  });
 
-      let tasks = JSON.parse(localStorage.getItem("tasks"));
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 
-      tasks = tasks.map(task => {
+  renderTasks();
+}
 
-        if(task.id === id){
+// Complete Task
+function completeTask(id) {
 
-          if(task.remainingHours > 0){
-            task.remainingHours--;
-          }
+  let tasks = JSON.parse(localStorage.getItem("tasks"));
 
-          // Auto Complete
-          if(task.remainingHours === 0){
-            task.completed = true;
-          }
-        }
+  tasks = tasks.map(task => {
 
-        return task;
-      });
+    if (task.id === id) {
 
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-
-      renderTasks();
+      task.remainingHours = 0;
+      task.completed = true;
     }
 
-    // Complete Task
-    function completeTask(id){
+    return task;
+  });
 
-      let tasks = JSON.parse(localStorage.getItem("tasks"));
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 
-      tasks = tasks.map(task => {
+  renderTasks();
+}
 
-        if(task.id === id){
+// Reset Data
+function resetData() {
 
-          task.remainingHours = 0;
-          task.completed = true;
-        }
+  // Popup Confirmation
+  const confirmReset = confirm(
+    "Are you sure you want to reset all data?"
+  );
 
-        return task;
-      });
+  // If user presses Cancel
+  if (!confirmReset) {
+    return;
+  }
 
-      localStorage.setItem("tasks", JSON.stringify(tasks));
+  // Clear old data
+  localStorage.clear();
 
-      renderTasks();
-    }
+  // Create fresh tasks
+  const freshTasks = baseTasks.map(task => ({
+    ...task,
+    remainingHours: task.dailyHours,
+    completed: false
+  }));
 
-    // Reset Data
-    function resetData(){
+  // Save fresh data
+  localStorage.setItem("tasks", JSON.stringify(freshTasks));
+  localStorage.setItem("savedDate", today);
 
-      localStorage.clear();
-
-      const freshTasks = baseTasks.map(task => ({
-        ...task,
-        remainingHours: task.dailyHours,
-        completed:false
-      }));
-
-      localStorage.setItem("tasks", JSON.stringify(freshTasks));
-      localStorage.setItem("savedDate", today);
-
-      renderTasks();
-    }
-
-    initializeData();
+  // Re-render tasks
+  renderTasks();
+}
